@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Taskboard - Student Task Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="proj.css">
+</head>
+<body>
+
+    <!-- Hero: profile, theme toggle, greeting, progress, quote -->
+    <header class="hero">
+        <div class="hero__inner">
+
+            <div class="topbar">
+                <div class="profile">
+                    <div class="avatar" id="avatar">🎓</div>
+                    <input id="studentName" class="profile__name" type="text" maxlength="20"
+                           readonly aria-label="Logged-in user">
+                </div>
+                <div class="topbar__btns"><button class="theme-btn" id="themeBtn" aria-label="Switch to dark mode">🌙</button>
+                    <button class="theme-btn" id="logoutBtn" aria-label="Log out" title="Log out">🚪</button></div>
+            </div>
+
+            <div class="hero__row">
+                <div class="hero__text">
+                    <p class="hero__date" id="todayDate"></p>
+                    <h1 id="greeting">Taskboard</h1>
+                    <p class="hero__summary" id="summary"></p>
+                </div>
+
+                <div class="progress" aria-label="Progress">
+                    <p class="progress__label">
+                        <strong id="doneCount">0</strong> of <strong id="totalCount">0</strong> tasks completed
+                    </p>
+                    <div class="progress__track">
+                        <div class="progress__fill" id="barFill"></div>
+                    </div>
+                    <p class="progress__percent" id="percentText">0%</p>
+                </div>
+            </div>
+
+            <div class="quote">
+                <span class="quote__icon" aria-hidden="true">✨</span>
+                <p class="quote__text" id="quoteText"></p>
+                <button class="quote__btn" id="quoteBtn">New quote</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="layout">
+
+        <aside class="side">
+            <!-- Duolingo-style streak -->
+            <section class="panel streak" aria-label="Daily streak">
+                <div class="streak__top">
+                    <span class="streak__flame" aria-hidden="true">🔥</span>
+                    <div><p class="streak__num"><span id="streakNum">0</span> day streak</p>
+                    <p class="streak__msg" id="streakMsg"></p></div>
+                </div>
+                <div class="streak__week" id="streakWeek"></div>
+            </section>
+
+            <!-- Add / edit form -->
+            <section class="panel form-panel" aria-labelledby="formTitle">
+                <h2 id="formTitle">✏️ Add a task</h2>
+
+                <form id="taskForm" novalidate>
+                    <div class="field field--wide">
+                        <label for="title">Task</label>
+                        <input id="title" type="text" placeholder="e.g. Finish DBMS record" autocomplete="off">
+                        <span class="error" id="titleError" aria-live="polite"></span>
+                    </div>
+
+                    <div class="field">
+                        <label for="category">Category</label>
+                        <select id="category">
+                            <option value="Study">📚 Study</option>
+                            <option value="Work">💼 Work</option>
+                            <option value="Personal">🌸 Personal</option>
+                            <option value="Health">💪 Health</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="priority">Priority</label>
+                        <select id="priority">
+                            <option value="high">🔥 High</option>
+                            <option value="medium" selected>⚡ Medium</option>
+                            <option value="low">🌱 Low</option>
+                        </select>
+                    </div>
+
+                    <div class="field field--wide">
+                        <label for="due">Due date (optional)</label>
+                        <input id="due" type="date">
+                        <span class="error" id="dueError" aria-live="polite"></span>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn--primary" id="submitBtn">Add task</button>
+                        <button type="button" class="btn btn--ghost" id="cancelBtn" hidden>Cancel edit</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Statistics by category -->
+            <section class="panel stats-panel" aria-labelledby="statsTitle">
+                <h2 id="statsTitle">📊 Task statistics</h2>
+                <div class="stats" id="statsList"></div>
+            </section>
+        </aside>
+
+        <div class="main-col">
+            <!-- Focus timer -->
+            <section class="panel timer" aria-labelledby="timerTitle">
+                <h2 id="timerTitle">⏱️ Focus timer</h2>
+                <div class="timer__body"><div class="timer__main">
+                <p class="timer__clock" id="timerClock">--:--</p>
+                <p class="timer__task" id="timerTask">Press ▶ Focus on a task to begin.</p>
+                <button class="btn btn--ghost" id="timerStop" hidden>⏹ Stop</button>
+                <p class="timer__goal" id="goalText"></p>
+                <div class="stat__track"><div class="stat__fill timer__fill" id="goalFill"></div></div>
+                <p class="timer__plan" id="planText"></p>
+                </div>
+                <div class="timer__set">
+                    <div class="field field--wide"><label for="technique">Working technique</label>
+                        <select id="technique">
+                            <option value="pomodoro">🍅 Pomodoro (25 / 5)</option>
+                            <option value="classic">📘 Classic (50 / 10)</option>
+                            <option value="deep">🧠 Deep work (90 / 20)</option>
+                            <option value="marathon">🏃 Marathon (120 / 15)</option>
+                            <option value="custom">🎛️ Custom</option>
+                        </select></div>
+                    <div class="field"><label for="workMin">Work (min)</label><input id="workMin" type="number" min="5" max="120"></div>
+                    <div class="field"><label for="breakMin">Break (min)</label><input id="breakMin" type="number" min="1" max="60"></div>
+                    <div class="field field--wide"><label for="goalHours">Daily goal (hours)</label><input id="goalHours" type="number" min="1" max="16" step="0.5">
+                        <span class="error" id="timerNote">Work sessions are capped at 120 min so you always get a break.</span></div>
+                </div>
+            </div>
+            </section>
+
+
+        <!-- Task list -->
+        <section class="panel list-panel" aria-labelledby="listTitle">
+            <div class="views">
+                <button class="view-btn" id="viewTasks" aria-pressed="true">📝 Tasks</button>
+                <button class="view-btn" id="viewHistory" aria-pressed="false">🕘 History</button>
+                <button class="view-btn" id="viewSummary" aria-pressed="false">📈 Summary</button>
+            </div>
+            <div id="tasksView">
+            <div class="list-head">
+                <h2 id="listTitle">📝 Your tasks</h2>
+                <input id="search" class="search" type="search" placeholder="🔍 Search tasks">
+            </div>
+
+            <div class="tabs" role="group" aria-label="Filter tasks">
+                <button class="tab" data-filter="all" aria-pressed="true">All <span id="countAll">0</span></button>
+                <button class="tab" data-filter="pending" aria-pressed="false">Pending <span id="countPending">0</span></button>
+                <button class="tab" data-filter="completed" aria-pressed="false">Completed <span id="countCompleted">0</span></button>
+            </div>
+
+            <ul class="task-list" id="taskList"></ul>
+
+            <div class="empty" id="emptyState" hidden>
+                <p class="empty__emoji" id="emptyEmoji" aria-hidden="true">📭</p>
+                <p class="empty__title" id="emptyTitle"></p>
+                <p class="empty__text" id="emptyText"></p>
+            </div>
+
+            <div class="list-foot">
+                <button class="btn btn--ghost" id="importBtn">☁️ Import sample tasks</button>
+                <button class="btn btn--ghost" id="clearDone">🧹 Clear completed</button>
+            </div>
+            </div>
+
+            <div id="summaryView" hidden>
+                <h2 id="summaryTitle">📈 Monthly summary</h2>
+                <p class="verdict" id="verdict"></p>
+                <div class="cards" id="summaryCards"></div>
+            </div>
+
+            <!-- History: completed tasks grouped by day -->
+            <div id="historyView" hidden>
+                <h2>🕘 Completed history</h2>
+                <div id="historyList"></div>
+            </div>
+        </section>
+        </div>
+    </main>
+
+    <!-- Compulsory break -->
+    <div class="break" id="breakOverlay" hidden role="alertdialog" aria-labelledby="breakTitle">
+        <div class="break__card">
+            <p class="break__emoji" aria-hidden="true">🌊</p>
+            <h2 id="breakTitle">Time for a break</h2>
+            <p class="break__clock" id="breakClock">00:00</p>
+            <p id="breakMsg">Stand up, stretch, drink water and rest your eyes. Your next session unlocks when the break ends.</p>
+            <div class="break__btns" id="breakBtns" hidden>
+                <button class="btn btn--primary" id="breakContinue">▶ Start next session</button>
+                <button class="btn btn--ghost" id="breakFinish">Finish for now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login / sign up -->
+    <div class="auth" id="auth">
+        <form class="auth__card" id="authForm" novalidate>
+            <p class="auth__logo" aria-hidden="true">🪸</p>
+            <h2>Taskboard</h2>
+            <div class="auth__modes">
+                <button type="button" class="view-btn" id="modeLogin" aria-pressed="true">Log in</button>
+                <button type="button" class="view-btn" id="modeSignup" aria-pressed="false">Sign up</button>
+            </div>
+            <div class="field"><label for="authUser">Username</label>
+                <input id="authUser" type="text" autocomplete="username" placeholder="letters, numbers, _"></div>
+            <div class="field"><label for="authPass">Password</label>
+                <input id="authPass" type="password" autocomplete="current-password" placeholder="at least 6 characters"></div>
+            <div class="field" id="avatarField" hidden><label>Choose your avatar</label><div class="avatar-pick" id="avatarPick"></div></div>
+            <span class="error" id="authError" aria-live="polite"></span>
+            <button type="submit" class="btn btn--primary" id="authSubmit">Log in</button>
+        </form>
+    </div>
+
+    <!-- Toast message -->
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden>
+        <span id="toastText"></span>
+        <button class="toast__action" id="toastAction" hidden>Undo</button>
+    </div>
+
+    <script src="proj.js"></script>
+</body>
+</html>
